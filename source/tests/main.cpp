@@ -67,10 +67,13 @@ std::vector<wchar_t*> MakeArgv(std::vector<std::wstring>& storage, std::initiali
 
 void TestDpiMath() {
     CHECK(DpiMath_PercentToDpi(100) == 96);
+    CHECK(DpiMath_PercentToDpi(125) == 120);
+    CHECK(DpiMath_PercentToDpi(150) == 144);
     CHECK(DpiMath_PercentToDpi(175) == 168);
     CHECK(DpiMath_PercentToDpi(200) == 192);
     CHECK(DpiMath_PercentToDpi(225) == 216);
     CHECK(DpiMath_PercentToDpi(250) == 240);
+    CHECK(DpiMath_PercentToDpi(500) == 480);
     CHECK(DpiMath_PercentToDpi(0) == 96);
     CHECK(DpiMath_PercentToDpi(-10) == 96);
 
@@ -79,6 +82,7 @@ void TestDpiMath() {
     CHECK(DpiMath_DpiToPercent(192) == 200);
     CHECK(DpiMath_DpiToPercent(216) == 225);
     CHECK(DpiMath_DpiToPercent(240) == 250);
+    CHECK(DpiMath_DpiToPercent(480) == 500);
     CHECK(DpiMath_DpiToPercent(0) == 100);
 
     CHECK(DpiMath_PercentToDpi(DpiMath_DpiToPercent(168)) == 168);
@@ -89,11 +93,21 @@ void TestDpiMath() {
     CHECK(DpiMath_Scale(100, 0, 216) == 100);
     CHECK(DpiMath_Scale(-16, 168, 216) == MulDiv(-16, 216, 168));
 
-    CHECK(DpiMath_PercentInRange(50));
-    CHECK(DpiMath_PercentInRange(400));
+    CHECK(DpiMath_PercentInRange(100));
+    CHECK(DpiMath_PercentInRange(125));
+    CHECK(DpiMath_PercentInRange(150));
+    CHECK(DpiMath_PercentInRange(175));
+    CHECK(DpiMath_PercentInRange(200));
     CHECK(DpiMath_PercentInRange(225));
-    CHECK(!DpiMath_PercentInRange(49));
-    CHECK(!DpiMath_PercentInRange(401));
+    CHECK(DpiMath_PercentInRange(250));
+    CHECK(DpiMath_PercentInRange(300));
+    CHECK(DpiMath_PercentInRange(400));
+    CHECK(DpiMath_PercentInRange(500));
+    CHECK(!DpiMath_PercentInRange(50));
+    CHECK(!DpiMath_PercentInRange(230));
+    CHECK(!DpiMath_PercentInRange(350));
+    CHECK(!DpiMath_PercentInRange(99));
+    CHECK(!DpiMath_PercentInRange(501));
 }
 
 void TestProcessNames() {
@@ -125,10 +139,10 @@ void TestProcessNames() {
 void TestLauncherArgs() {
     std::vector<std::wstring> store;
     {
-        auto argv = MakeArgv(store, {L"225", L"--designer"});
+        auto argv = MakeArgv(store, {L"200", L"--designer"});
         LauncherOptions opt;
         CHECK(Launcher_ParseArgs(static_cast<int>(argv.size()), argv.data(), opt));
-        CHECK(opt.dpiPercent == 225);
+        CHECK(opt.dpiPercent == 200);
         CHECK(opt.designer);
         CHECK(!opt.useStart);
         CHECK(!opt.help);

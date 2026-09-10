@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <wchar.h>
+#include <cstdio>
 
 int wmain(int argc, wchar_t** argv) {
     Console::ApplyIcon();
@@ -42,14 +43,14 @@ int wmain(int argc, wchar_t** argv) {
 
     int dpi = opt.dpiPercent;
     if (dpi < 0 && IO::FileExists(ini.c_str())) {
-        dpi = static_cast<int>(GetPrivateProfileIntW(L"shim", L"dpi", 225, ini.c_str()));
+        dpi = static_cast<int>(GetPrivateProfileIntW(L"shim", L"dpi", 200, ini.c_str()));
     }
     if (dpi < 0) {
-        dpi = 225;
+        dpi = 200;
     }
     if (!DpiMath_PercentInRange(dpi)) {
         Console::Ensure();
-        Console::Print(L"ERROR: dpi percent must be 50..400, got %d", dpi);
+        Console::Print(L"ERROR: dpi percent must be 100, 125, 150, 175, 200, 225, 250, 300, 400 or 500, got %d", dpi);
         return 1;
     }
 

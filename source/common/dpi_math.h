@@ -2,6 +2,9 @@
 
 #include <windows.h>
 
+constexpr int DpiMath_MinPercent = 100;
+constexpr int DpiMath_MaxPercent = 500;
+
 inline UINT DpiMath_PercentToDpi(int percent) {
     if (percent <= 0) {
         return 96;
@@ -24,5 +27,19 @@ inline int DpiMath_Scale(int value, UINT fromDpi, UINT toDpi) {
 }
 
 inline bool DpiMath_PercentInRange(int percent) {
-    return percent >= 50 && percent <= 400;
+    switch (percent) {
+    case 100:
+    case 125:
+    case 150:
+    case 175:
+    case 200:
+    case 225:
+    case 250:
+    case 300:
+    case 400:
+    case 500:
+        return true;
+    default:
+        return false;
+    }
 }

@@ -52,13 +52,13 @@ void Console::Usage() {
     Print(L"");
     Print(L"Examples:");
     Print(L"  1C-DPI-Shim.exe 200");
-    Print(L"  1C-DPI-Shim.exe 225 --designer");
+    Print(L"  1C-DPI-Shim.exe 200 --designer");
     Print(L"  1C-DPI-Shim.exe 250 --designer -- /N\"Admin\"");
-    Print(L"  1C-DPI-Shim.exe 300 --designer");
+    Print(L"  1C-DPI-Shim.exe 500 --designer");
     Print(L"  1C-DPI-Shim.exe --dpi=175");
     Print(L"");
     Print(L"Options:");
-    Print(L"  N                   Target scale percent (50-400, may exceed 255)");
+    Print(L"  N                   Scale percent: 100, 125, 150, 175, 200, 225, 250, 300, 400, 500");
     Print(L"  --dpi=N             Same as a bare percent");
     Print(L"  --exe=PATH          Path to 1cestart.exe / 1cv8.exe");
     Print(L"  --exe PATH          Same, as a separate argument");

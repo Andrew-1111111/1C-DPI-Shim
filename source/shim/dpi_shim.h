@@ -10,8 +10,8 @@ struct ShimConfig {
     bool scaleNonClientMetrics = false;
     bool scaleStockFonts = true;
     bool blockPerMonitor = true;
-    int dpiPercent = 225;
-    UINT virtualDpi = 216;
+    int dpiPercent = 200;
+    UINT virtualDpi = 192;
     UINT systemDpi = 96;
     wchar_t logPath[MAX_PATH] = {};
     wchar_t iniPath[MAX_PATH] = {};

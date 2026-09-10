@@ -192,12 +192,12 @@ void LoadConfig(HMODULE module) {
     g_config.scaleNonClientMetrics = ReadInt(g_config.iniPath, L"scale_nonclient_metrics", 0) != 0;
     g_config.scaleStockFonts = ReadInt(g_config.iniPath, L"scale_stock_fonts", 1) != 0;
     g_config.blockPerMonitor = ReadInt(g_config.iniPath, L"block_per_monitor", 1) != 0;
-    g_config.dpiPercent = ReadInt(g_config.iniPath, L"dpi", 225);
+    g_config.dpiPercent = ReadInt(g_config.iniPath, L"dpi", 200);
 
     wchar_t envDpi[32] = {};
     if (GetEnvironmentVariableW(L"ONEC_DPI", envDpi, 32) > 0) {
         const int v = _wtoi(envDpi);
-        if (v >= 50 && v <= 400) {
+        if (DpiMath_PercentInRange(v)) {
             g_config.dpiPercent = v;
         }
     }
@@ -210,8 +210,8 @@ void LoadConfig(HMODULE module) {
         g_config.logEnabled = _wtoi(envLogEnabled) != 0;
     }
 
-    if (g_config.dpiPercent < 50 || g_config.dpiPercent > 400) {
-        g_config.dpiPercent = 225;
+    if (!DpiMath_PercentInRange(g_config.dpiPercent)) {
+        g_config.dpiPercent = 200;
     }
     g_config.virtualDpi = Shim_PercentToDpi(g_config.dpiPercent);
 
