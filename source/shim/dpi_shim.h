@@ -16,6 +16,7 @@ struct ShimConfig {
     wchar_t logPath[MAX_PATH] = {};
     wchar_t iniPath[MAX_PATH] = {};
     wchar_t dllPath[MAX_PATH] = {};
+    wchar_t launchExe[MAX_PATH] = {};
 };
 
 ShimConfig& Shim_Config();

@@ -31,27 +31,83 @@ bool JoinPath(wchar_t* out, size_t outCch, const wchar_t* dir, const wchar_t* fi
     return wcsncat_s(out, outCch, file, _TRUNCATE) == 0;
 }
 
-bool EnsureDir(const wchar_t* dir) {
-    if (CreateDirectoryW(dir, nullptr)) {
-        return true;
+bool GetModuleDir(wchar_t* dir, size_t cch) {
+    wchar_t path[MAX_PATH] = {};
+    const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
+    if (n == 0 || n >= MAX_PATH) {
+        return false;
     }
-    return GetLastError() == ERROR_ALREADY_EXISTS;
+    wchar_t* slash = wcsrchr(path, L'\\');
+    if (!slash) {
+        return false;
+    }
+    *slash = 0;
+    return wcsncpy_s(dir, cch, path, _TRUNCATE) == 0;
+}
+
+bool DirIsWritable(const wchar_t* dir) {
+    wchar_t probe[MAX_PATH] = {};
+    if (!JoinPath(probe, MAX_PATH, dir, L"1C_DPI_Shim.write-test")) {
+        return false;
+    }
+    HANDLE file = CreateFileW(
+        probe, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+        FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
+    if (file == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    CloseHandle(file);
+    return true;
+}
+
+bool GetTempDir(wchar_t* dir, size_t cch) {
+    const DWORD n = GetTempPathW(static_cast<DWORD>(cch), dir);
+    if (n == 0 || n >= cch) {
+        return false;
+    }
+    wchar_t* slash = wcsrchr(dir, L'\\');
+    if (slash && slash[1] == 0) {
+        *slash = 0;
+    }
+    return true;
 }
 
 bool GetPayloadDir(wchar_t* dir, size_t cch) {
-    wchar_t root[MAX_PATH] = {};
-    DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", root, MAX_PATH);
-    if (n == 0 || n >= MAX_PATH) {
-        n = GetTempPathW(MAX_PATH, root);
-        if (n == 0 || n >= MAX_PATH) {
-            return false;
-        }
-        wchar_t* slash = wcsrchr(root, L'\\');
-        if (slash && slash[1] == 0) {
-            *slash = 0;
-        }
+    if (GetModuleDir(dir, cch) && DirIsWritable(dir)) {
+        return true;
     }
-    return JoinPath(dir, cch, root, L"1C-DPI-Shim") && EnsureDir(dir);
+    return GetTempDir(dir, cch);
+}
+
+void RemoveLegacyAppDataCache() {
+    wchar_t root[MAX_PATH] = {};
+    const DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", root, MAX_PATH);
+    if (n == 0 || n >= MAX_PATH) {
+        return;
+    }
+    wchar_t dir[MAX_PATH] = {};
+    if (!JoinPath(dir, MAX_PATH, root, L"1C-DPI-Shim")) {
+        return;
+    }
+    wchar_t pattern[MAX_PATH] = {};
+    if (!JoinPath(pattern, MAX_PATH, dir, L"*")) {
+        return;
+    }
+    WIN32_FIND_DATAW fd = {};
+    HANDLE find = FindFirstFileW(pattern, &fd);
+    if (find != INVALID_HANDLE_VALUE) {
+        do {
+            if (fd.cFileName[0] == L'.') {
+                continue;
+            }
+            wchar_t file[MAX_PATH] = {};
+            if (JoinPath(file, MAX_PATH, dir, fd.cFileName)) {
+                DeleteFileW(file);
+            }
+        } while (FindNextFileW(find, &fd));
+        FindClose(find);
+    }
+    RemoveDirectoryW(dir);
 }
 
 bool ReadAll(const wchar_t* path, std::vector<unsigned char>& bytes) {
@@ -109,6 +165,7 @@ bool Payload_EnsureShimDll(wchar_t* path, size_t pathCch, wchar_t* error, size_t
         return false;
     }
     path[0] = 0;
+    RemoveLegacyAppDataCache();
 
     HMODULE exe = GetModuleHandleW(nullptr);
     HRSRC res = FindResourceW(exe, L"SHIMPAYLOAD", RT_RCDATA);
@@ -126,7 +183,7 @@ bool Payload_EnsureShimDll(wchar_t* path, size_t pathCch, wchar_t* error, size_t
 
     wchar_t dir[MAX_PATH] = {};
     if (!GetPayloadDir(dir, MAX_PATH)) {
-        SetError(error, errorCch, L"Failed to create %LOCALAPPDATA%\\1C-DPI-Shim", GetLastError());
+        SetError(error, errorCch, L"Failed to choose a writable folder for the embedded shim", GetLastError());
         return false;
     }
 

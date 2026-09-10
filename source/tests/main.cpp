@@ -1,5 +1,7 @@
 #include "dpi_math.h"
+#include "io.h"
 #include "launcher_args.h"
+#include "onec_locator.h"
 #include "process_utils.h"
 
 #include <conio.h>
@@ -187,6 +189,65 @@ void TestLauncherArgs() {
         CHECK(opt.logEnabled == 1);
         CHECK(opt.logPath == L"C:\\Temp\\shim.log");
     }
+    {
+        auto argv = MakeArgv(store, {L"--ini=D:\\cfg\\1c-dpi.ini", L"--exe=C:\\1cv8\\1cv8.exe"});
+        LauncherOptions opt;
+        CHECK(Launcher_ParseArgs(static_cast<int>(argv.size()), argv.data(), opt));
+        CHECK(opt.iniPath == L"D:\\cfg\\1c-dpi.ini");
+        CHECK(opt.exePath == L"C:\\1cv8\\1cv8.exe");
+    }
+    {
+        auto argv = MakeArgv(store, {L"--ini", L"E:\\a\\1c-dpi.ini", L"--exe", L"E:\\1cestart.exe"});
+        LauncherOptions opt;
+        CHECK(Launcher_ParseArgs(static_cast<int>(argv.size()), argv.data(), opt));
+        CHECK(opt.iniPath == L"E:\\a\\1c-dpi.ini");
+        CHECK(opt.exePath == L"E:\\1cestart.exe");
+    }
+}
+
+void TouchEmptyFile(const std::wstring& path) {
+    HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    CHECK(h != INVALID_HANDLE_VALUE);
+    if (h != INVALID_HANDLE_VALUE) {
+        CloseHandle(h);
+    }
+}
+
+void TestResolveExe() {
+    wchar_t tmp[MAX_PATH] = {};
+    GetTempPathW(MAX_PATH, tmp);
+    const std::wstring dir = IO::Join(tmp, L"1c-dpi-resolve-test");
+    CreateDirectoryW(dir.c_str(), nullptr);
+
+    const std::wstring startExe = IO::Join(dir, L"1cestart.exe");
+    const std::wstring platformExe = IO::Join(dir, L"1cv8.exe");
+    const std::wstring cliExe = IO::Join(dir, L"cli-1cv8.exe");
+    TouchEmptyFile(startExe);
+    TouchEmptyFile(platformExe);
+    TouchEmptyFile(cliExe);
+
+    const std::wstring ini = IO::Join(dir, L"1c-dpi.ini");
+    const std::wstring quotedStart = L"\"" + startExe + L"\"";
+    WritePrivateProfileStringW(L"launcher", L"exe", startExe.c_str(), ini.c_str());
+    WritePrivateProfileStringW(L"launcher", L"start_exe", startExe.c_str(), ini.c_str());
+    WritePrivateProfileStringW(L"launcher", L"platform_exe", platformExe.c_str(), ini.c_str());
+
+    CHECK(OneCLocator::ResolveExe(L"", ini, false, true) == startExe);
+    CHECK(OneCLocator::ResolveExe(L"", ini, true, false) == platformExe);
+    CHECK(OneCLocator::ResolveExe(cliExe, ini, true, false) == cliExe);
+    CHECK(OneCLocator::WorkingDir(platformExe) == dir);
+
+    WritePrivateProfileStringW(L"launcher", L"exe", quotedStart.c_str(), ini.c_str());
+    CHECK(IO::ReadIniString(ini, L"launcher", L"exe") == startExe);
+
+    const std::wstring missingIni = IO::Join(dir, L"missing.ini");
+    CHECK(OneCLocator::ResolveExe(cliExe, missingIni, false, true) == cliExe);
+
+    DeleteFileW(ini.c_str());
+    DeleteFileW(startExe.c_str());
+    DeleteFileW(platformExe.c_str());
+    DeleteFileW(cliExe.c_str());
+    RemoveDirectoryW(dir.c_str());
 }
 
 void TestIniPresent() {
@@ -205,6 +266,14 @@ void TestIniPresent() {
     const int dpi = static_cast<int>(GetPrivateProfileIntW(L"shim", L"dpi", 0, ini));
     CHECK(DpiMath_PercentInRange(dpi));
     CHECK(GetPrivateProfileIntW(L"shim", L"enabled", 0, ini) != 0);
+
+    const std::wstring exe = IO::ReadIniString(ini, L"launcher", L"exe");
+    const std::wstring start = IO::ReadIniString(ini, L"launcher", L"start_exe");
+    const std::wstring platform = IO::ReadIniString(ini, L"launcher", L"platform_exe");
+    CHECK(!exe.empty() || !start.empty());
+    CHECK(!platform.empty());
+    CHECK(OneCLocator::ResolveExe(L"", ini, false, true) == (!exe.empty() ? exe : start));
+    CHECK(OneCLocator::ResolveExe(L"", ini, true, false) == platform);
 }
 
 } // namespace
@@ -262,6 +331,7 @@ int wmain() {
     TestDpiMath();
     TestProcessNames();
     TestLauncherArgs();
+    TestResolveExe();
     TestIniPresent();
     printf("%d passed, %d failed (%s)\n", g_passed, g_failed, Proc_ArchitectureName());
     WaitForAnyKey();

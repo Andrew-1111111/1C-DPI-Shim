@@ -60,11 +60,12 @@ void Console::Usage() {
     Print(L"Options:");
     Print(L"  N                   Scale percent: 100, 125, 150, 175, 200, 225, 250, 300, 400, 500");
     Print(L"  --dpi=N             Same as a bare percent");
-    Print(L"  --exe=PATH          Path to 1cestart.exe / 1cv8.exe");
+    Print(L"  --exe=PATH          Path to 1cestart.exe / 1cv8.exe (overrides ini)");
     Print(L"  --exe PATH          Same, as a separate argument");
+    Print(L"  --ini=PATH          Path to 1c-dpi.ini (dpi and [launcher] exe paths)");
+    Print(L"  --ini PATH          Same, as a separate argument");
     Print(L"  --designer          Launch 1cv8.exe DESIGNER directly");
     Print(L"  --start             Launch 1cestart.exe (default)");
-    Print(L"  --ini=PATH          Path to 1c-dpi.ini");
     Print(L"  --log=PATH          Shim log path");
     Print(L"  --log=off           Disable logging");
     Print(L"  --no-log            Disable logging");

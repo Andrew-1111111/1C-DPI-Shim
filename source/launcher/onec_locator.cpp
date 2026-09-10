@@ -45,3 +45,51 @@ std::wstring OneCLocator::FindLatest1cv8() {
     }
     return bestExe;
 }
+
+std::wstring OneCLocator::ResolveExe(const std::wstring& cliExe, const std::wstring& ini, bool designer, bool useStart) {
+    if (!cliExe.empty()) {
+        return cliExe;
+    }
+
+    if (IO::FileExists(ini.c_str())) {
+        if (designer) {
+            std::wstring platform = IO::ReadIniString(ini, L"launcher", L"platform_exe");
+            if (!platform.empty()) {
+                return platform;
+            }
+            std::wstring exe = IO::ReadIniString(ini, L"launcher", L"exe");
+            if (!exe.empty()) {
+                return exe;
+            }
+        } else {
+            std::wstring exe = IO::ReadIniString(ini, L"launcher", L"exe");
+            if (!exe.empty()) {
+                return exe;
+            }
+            std::wstring start = IO::ReadIniString(ini, L"launcher", L"start_exe");
+            if (!start.empty()) {
+                return start;
+            }
+        }
+    }
+
+    if (designer || !useStart) {
+        return FindLatest1cv8();
+    }
+    const std::wstring start = L"C:\\Program Files (x86)\\1cv8\\common\\1cestart.exe";
+    if (IO::FileExists(start.c_str())) {
+        return start;
+    }
+    return FindLatest1cv8();
+}
+
+std::wstring OneCLocator::WorkingDir(const std::wstring& exe) {
+    if (exe.empty()) {
+        return {};
+    }
+    const size_t slash = exe.find_last_of(L"\\/");
+    if (slash == std::wstring::npos || slash == 0) {
+        return {};
+    }
+    return exe.substr(0, slash);
+}

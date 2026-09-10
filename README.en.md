@@ -17,12 +17,13 @@ This is not a system DPI change, not 1C:EDT, not platform 8.2, and not a patch o
 ## Features
 
 - Only `1cestart.exe`, `1cv8.exe`, `1cv8c.exe`, `1cv8s.exe`, `1cv8a.exe`
-- Written in **C++** (single exe); no .NET / Python / PowerShell / NuGet
+- Written in **C++**; no .NET / Python / PowerShell / NuGet
+- Ship `1C-DPI-Shim.exe` and `1c-dpi.ini`. At launch `1C_DPI_Shim.dll` appears next to the exe (Windows can load a DLL only from disk). Nothing is written under `%LOCALAPPDATA%`
 - MinHook is built into `source\minhook`; no external libraries
 - Does not modify the 1C install
 - **Win32 / x86** output (`bin\x86\`) — same bitness as 1C 8.3
 - Scale only **100 / 125 / 150 / 175 / 200 / 225 / 250 / 300 / 400 / 500%** (stock Windows steps)
-- Scale and enable/disable via `1c-dpi.ini`
+- Scale and 1C paths via `1c-dpi.ini` or the command line
 - Run from a console, a shortcut with arguments, or double-click (defaults from the ini)
 - Diagnostic log next to the exe
 
@@ -56,7 +57,7 @@ bin\x86\1C_DPI_Tests.exe
 bin\x86\1C_DPI_Tests.exe
 ```
 
-Tests cover percent↔DPI conversion, 1C process-name matching, launcher argument parsing, and `1c-dpi.ini` presence.
+Tests cover percent↔DPI conversion, 1C process-name matching, command-line parsing, 1C paths from the ini and command line, and `1c-dpi.ini` presence.
 
 ## GitHub Actions
 
@@ -73,14 +74,16 @@ Runs on push to `main`/`master`, pull requests, manual **Run workflow**, and `v*
 
 Nothing is copied into `C:\Program Files (x86)\1cv8`.
 
-1. Build Release Win32 or download the zip from Actions / Releases.
+1. Build Release Win32 or download the zip from [Releases](https://github.com/Andrew-1111111/1C-DPI-Shim/releases) / Actions.
 2. Copy `1C-DPI-Shim.exe` and `1c-dpi.ini` to a folder you own.
+
+On the first launch `1C_DPI_Shim.dll` appears in the same folder. If that folder is not writable, the DLL is written to `%TEMP%`.
 
 Then use any of three ways: console, a shortcut with arguments, or double-click with ini defaults.
 
 ## How to run
 
-Command-line arguments override `1c-dpi.ini`. Launching stock `1cestart.exe` **without** `1C-DPI-Shim.exe` does not load the shim.
+Command-line arguments override `1c-dpi.ini` (`--exe` for the 1C path, a percent / `--dpi` for scale, `--ini` for the settings file). Launching stock `1cestart.exe` **without** `1C-DPI-Shim.exe` does not load the shim.
 
 ### Console
 
@@ -92,6 +95,7 @@ cd /d C:\Tools\1C-DPI-Shim
 1C-DPI-Shim.exe 200
 1C-DPI-Shim.exe 200 --designer
 1C-DPI-Shim.exe 200 --exe="C:\Program Files (x86)\1cv8\common\1cestart.exe"
+1C-DPI-Shim.exe 250 --designer
 1C-DPI-Shim.exe --console
 ```
 
@@ -127,8 +131,9 @@ platform_exe=C:\Program Files (x86)\1cv8\8.3.27.2342\bin\1cv8.exe
 ```
 
 - `dpi=` — 1C scale when no percent is given on the command line. **Only** the values in the table below (default 200).
-- `exe=` / `start_exe=` — `1cestart.exe` for a normal start.
+- `exe=` / `start_exe=` — `1cestart.exe` for a normal start (`--start`).
 - `platform_exe=` — `1cv8.exe` when you use `--designer`.
+- `--exe=` overrides `exe` / `start_exe` / `platform_exe`.
 
 If the ini paths are empty, the program looks for 1C under the default `Program Files (x86)\1cv8` folders.
 
@@ -149,11 +154,40 @@ See `1c-dpi.ini` next to the exe. `dpi=` accepts **only** these stock Windows sc
 | 400 | 384 |
 | 500 | 480 |
 
-Arbitrary percents (for example 230) are rejected. Environment overrides: `ONEC_DPI`, `ONEC_DPI_ENABLED`, `ONEC_DPI_INI`, `ONEC_DPI_LOG`, `ONEC_DPI_LOG_ENABLED`.
+Arbitrary percents (for example 230) are rejected. Environment variables (override the ini; the program also sets them for 1C): `ONEC_DPI`, `ONEC_DPI_ENABLED`, `ONEC_DPI_EXE`, `ONEC_DPI_INI`, `ONEC_DPI_LOG`, `ONEC_DPI_LOG_ENABLED`.
+
+## Log
+
+Default path: `<program folder>\1c-dpi-shim.log`.
+
+```ini
+log=0
+```
+
+or `1C-DPI-Shim.exe 200 --no-log`.
+
+Successful launch with Windows at 175% and the shim at 200%:
+
+```text
+system_dpi=168 (175%) virtual_dpi=192 (200%)
+spoof_active=yes
+GetDeviceCaps(LOGPIXELSX) original=168 spoofed=192 spoof=yes
+```
+
+## Uninstall
+
+Close 1C, do not start the program, and delete the folder with `1C-DPI-Shim.exe`, `1c-dpi.ini`, the log, and `1C_DPI_Shim.dll`. If the DLL was written to `%TEMP%`, delete it there too. Stock 1C shortcuts were not changed. Quick disable: `enabled=0`.
 
 ## How it works
 
-The exe starts 1C suspended, injects the embedded shim, and resumes. The shim spoofs `GetDeviceCaps` / `GetDpiForSystem` / `getContextDPI()` so 1C draws at the virtual scale. Child `1cv8*.exe` processes are injected again. Other desktop apps keep the real Windows scale. A separate `1C_DPI_Shim.dll` is not required next to the exe; the module is extracted to `%LOCALAPPDATA%\1C-DPI-Shim\` at launch.
+The exe starts 1C suspended, injects the embedded shim, and resumes. The shim spoofs `GetDeviceCaps` / `GetDpiForSystem` / `getContextDPI()` so 1C draws at the virtual scale. Child `1cv8*.exe` processes are injected again. Other desktop apps keep the real Windows scale. The shim module is embedded in the exe and extracted **next to it** at launch (`1C_DPI_Shim.dll`) because Windows can inject a DLL only from disk.
+
+## Limitations
+
+- 1C must be started through `1C-DPI-Shim.exe`
+- Changing `dpi` requires restarting 1C
+- Some UI (WebKit, external components, system dialogs) may stay at the system scale
+- Policies / antivirus may block `CreateRemoteThread`
 
 ## License
 

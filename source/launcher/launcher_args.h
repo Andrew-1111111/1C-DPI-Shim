@@ -52,6 +52,10 @@ inline bool Launcher_ParseArgs(int argc, wchar_t** argv, LauncherOptions& opt) {
             opt.iniPath = a + 6;
             continue;
         }
+        if (!afterDash && wcscmp(a, L"--ini") == 0 && i + 1 < argc) {
+            opt.iniPath = argv[++i];
+            continue;
+        }
         if (!afterDash && wcsncmp(a, L"--exe=", 6) == 0) {
             opt.exePath = a + 6;
             continue;

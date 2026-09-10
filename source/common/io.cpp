@@ -49,6 +49,12 @@ std::wstring IO::ReadIniString(const std::wstring& ini, const wchar_t* section, 
     wchar_t buf[MAX_PATH] = {};
     GetPrivateProfileStringW(section, key, L"", buf, MAX_PATH, ini.c_str());
     std::wstring s = buf;
+    while (!s.empty() && (s.front() == L' ' || s.front() == L'\t')) {
+        s.erase(s.begin());
+    }
+    while (!s.empty() && (s.back() == L' ' || s.back() == L'\t')) {
+        s.pop_back();
+    }
     if (s.size() >= 2 && s.front() == L'"' && s.back() == L'"') {
         s = s.substr(1, s.size() - 2);
     }

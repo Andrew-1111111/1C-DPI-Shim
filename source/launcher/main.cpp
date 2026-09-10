@@ -54,36 +54,14 @@ int wmain(int argc, wchar_t** argv) {
         return 1;
     }
 
-    std::wstring exe = opt.exePath;
-    if (exe.empty() && IO::FileExists(ini.c_str())) {
-        if (opt.designer) {
-            exe = IO::ReadIniString(ini, L"launcher", L"platform_exe");
-            if (exe.empty()) {
-                exe = IO::ReadIniString(ini, L"launcher", L"exe");
-            }
-        } else {
-            exe = IO::ReadIniString(ini, L"launcher", L"exe");
-            if (exe.empty()) {
-                exe = IO::ReadIniString(ini, L"launcher", L"start_exe");
-            }
-        }
-    }
-    if (exe.empty()) {
-        if (opt.designer || !opt.useStart) {
-            exe = OneCLocator::FindLatest1cv8();
-        } else {
-            exe = L"C:\\Program Files (x86)\\1cv8\\common\\1cestart.exe";
-            if (!IO::FileExists(exe.c_str())) {
-                exe = OneCLocator::FindLatest1cv8();
-            }
-        }
-    }
+    const std::wstring exe = OneCLocator::ResolveExe(opt.exePath, ini, opt.designer, opt.useStart);
     if (exe.empty() || !IO::FileExists(exe.c_str())) {
         Console::Ensure();
-        Console::Print(L"ERROR: 1C executable not found. Use --exe=PATH");
+        Console::Print(L"ERROR: 1C executable not found. Set [launcher] exe / platform_exe in the ini or use --exe=PATH");
         Console::Print(exe.c_str());
         return 1;
     }
+    const std::wstring workDir = OneCLocator::WorkingDir(exe);
 
     std::wstring cmd = IO::Quote(exe);
     if (opt.designer) {
@@ -106,6 +84,7 @@ int wmain(int argc, wchar_t** argv) {
     swprintf_s(dpiBuf, L"%d", dpi);
     SetEnvironmentVariableW(L"ONEC_DPI", dpiBuf);
     SetEnvironmentVariableW(L"ONEC_DPI_ENABLED", L"1");
+    SetEnvironmentVariableW(L"ONEC_DPI_EXE", exe.c_str());
     if (IO::FileExists(ini.c_str())) {
         SetEnvironmentVariableW(L"ONEC_DPI_INI", ini.c_str());
     }
@@ -121,7 +100,8 @@ int wmain(int argc, wchar_t** argv) {
 
     PROCESS_INFORMATION pi = {};
     wchar_t error[512] = {};
-    if (!Inject_CreateAndInject(exe.c_str(), cmdBuf.data(), nullptr, dllPath.c_str(), 20000, &pi, error, 512)) {
+    if (!Inject_CreateAndInject(exe.c_str(), cmdBuf.data(), workDir.empty() ? nullptr : workDir.c_str(),
+                                dllPath.c_str(), 20000, &pi, error, 512)) {
         Console::Ensure();
         Console::Print(L"ERROR: failed to launch/inject:");
         Console::Print(error);
@@ -131,7 +111,9 @@ int wmain(int argc, wchar_t** argv) {
     if (opt.console || GetConsoleWindow()) {
         Console::Print(L"Launched PID %lu", pi.dwProcessId);
         Console::Print(L"Target DPI: %d%%", dpi);
+        Console::Print(L"Ini: %s", ini.c_str());
         Console::Print(L"Exe: %s", exe.c_str());
+        Console::Print(L"WorkDir: %s", workDir.c_str());
         Console::Print(L"Shim: %s", dllPath.c_str());
     }
 

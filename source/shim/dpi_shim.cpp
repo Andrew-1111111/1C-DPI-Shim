@@ -158,15 +158,6 @@ void ResolveIniPath(HMODULE module, wchar_t* out, size_t outCch) {
         return;
     }
 
-    wchar_t appdata[MAX_PATH] = {};
-    if (GetEnvironmentVariableW(L"APPDATA", appdata, MAX_PATH) > 0) {
-        JoinPath(candidate, MAX_PATH, appdata, L"1C-DPI-Shim\\1c-dpi.ini");
-        if (IO::FileExists(candidate)) {
-            wcsncpy_s(out, outCch, candidate, _TRUNCATE);
-            return;
-        }
-    }
-
     wcsncpy_s(out, outCch, dllDir, _TRUNCATE);
     wcsncat_s(out, outCch, L"\\1c-dpi.ini", _TRUNCATE);
 }
@@ -223,6 +214,8 @@ void LoadConfig(HMODULE module) {
     }
     ResolveLogPath(module, requestedLog, g_config.logPath, MAX_PATH);
 
+    GetEnvironmentVariableW(L"ONEC_DPI_EXE", g_config.launchExe, MAX_PATH);
+
     (void)iniExists;
 }
 
@@ -239,6 +232,9 @@ void LogStartupBanner() {
     LOG_INFO("pid=%lu architecture=%s", Proc_CurrentPid(), Proc_ArchitectureName());
     Log_WriteW(L"process=%s", name);
     Log_WriteW(L"exe=%s", exe);
+    if (g_config.launchExe[0]) {
+        Log_WriteW(L"launch_exe=%s", g_config.launchExe);
+    }
     Log_WriteW(L"dll=%s", g_config.dllPath);
     Log_WriteW(L"ini=%s", g_config.iniPath);
     LOG_INFO("allowed_process=%s starter=%s platform=%s",
