@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="launcher">
+      <UniqueIdentifier>{f8b62d37-90c6-44d5-c17f-62b3ae908f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shim">
+      <UniqueIdentifier>{a3c1d8e2-4b71-4f90-9c2a-1d6e5f4b3a21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{e7a51c26-8fb5-43c4-b06e-51a29d8f7e65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MinHook">
+      <UniqueIdentifier>{c5e3fa04-6d93-41a2-9e4c-3f807b6d5c43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MinHook\hde">
+      <UniqueIdentifier>{d6f40b15-7ea4-42b3-af5d-40918c7e6d54}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\launcher\main.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="source\launcher\payload.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="source\launcher\console_icon.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shim\dllmain.cpp">
+      <Filter>shim</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shim\dpi_shim.cpp">
+      <Filter>shim</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shim\dpi_hooks.cpp">
+      <Filter>shim</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shim\logging.cpp">
+      <Filter>shim</Filter>
+    </ClCompile>
+    <ClCompile Include="source\common\process_utils.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="source\common\inject.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="source\minhook\buffer.c">
+      <Filter>MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="source\minhook\hook.c">
+      <Filter>MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="source\minhook\trampoline.c">
+      <Filter>MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="source\minhook\hde\hde32.c">
+      <Filter>MinHook\hde</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\launcher\launcher_args.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="source\launcher\payload.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="source\launcher\console_icon.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="resources\resource.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\common\dpi_math.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\shim\dpi_shim.h">
+      <Filter>shim</Filter>
+    </ClInclude>
+    <ClInclude Include="source\shim\dpi_hooks.h">
+      <Filter>shim</Filter>
+    </ClInclude>
+    <ClInclude Include="source\common\process_utils.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\shim\logging.h">
+      <Filter>shim</Filter>
+    </ClInclude>
+    <ClInclude Include="source\common\inject.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\MinHook.h">
+      <Filter>MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\buffer.h">
+      <Filter>MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\trampoline.h">
+      <Filter>MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\hde\hde32.h">
+      <Filter>MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\hde\table32.h">
+      <Filter>MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="source\minhook\hde\pstdint.h">
+      <Filter>MinHook\hde</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config\1c-dpi.ini">
+      <Filter>config</Filter>
+    </None>
+    <None Include="source\minhook\LICENSE.txt">
+      <Filter>MinHook</Filter>
+    </None>
+    <None Include="source\minhook\AUTHORS.txt">
+      <Filter>MinHook</Filter>
+    </None>
+    <None Include="resources\app.ico">
+      <Filter>resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\app.rc">
+      <Filter>resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

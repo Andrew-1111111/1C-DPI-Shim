@@ -1,0 +1,94 @@
+name: Build
+
+# Собирает Release Win32 (x86) под 1С 8.3, прогоняет тесты, публикует zip.
+# Артефакты: Actions → Artifacts.
+# Тег v* (например v1.0.0) создаёт GitHub Release.
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SOLUTION: 1C-DPI-Shim.sln
+  CONFIGURATION: Release
+  PLATFORM: Win32
+  PLATFORM_TOOLSET: v143
+  OUT: bin/x86
+
+jobs:
+  build:
+    name: Win32 Release
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: >
+          msbuild ${{ env.SOLUTION }}
+          /m
+          /p:Configuration=${{ env.CONFIGURATION }}
+          /p:Platform=${{ env.PLATFORM }}
+          /p:PlatformToolset=${{ env.PLATFORM_TOOLSET }}
+          /p:WindowsTargetPlatformVersion=10.0
+          /v:minimal
+
+      - name: Test
+        shell: pwsh
+        run: |
+          $exe = Join-Path "${{ env.OUT }}" "1C_DPI_Tests.exe"
+          & $exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $src = "${{ env.OUT }}"
+          $out = "dist/x86"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item "$src\1C-DPI-Shim.exe" $out
+          Copy-Item "$src\1c-dpi.ini" $out
+          Copy-Item "README.md" $out
+          Copy-Item "README.en.md" $out
+          Get-ChildItem $out | Format-Table Name, Length
+          Compress-Archive -Path "$out\*" -DestinationPath "1C-DPI-Shim-x86-Release.zip" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-DPI-Shim-x86-Release
+          path: 1C-DPI-Shim-x86-Release.zip
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+          generate_release_notes: true
+          body: |
+            **x86** (`1C-DPI-Shim-x86-Release.zip`) — для 1С:Предприятие 8.3 (`Program Files (x86)`).

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{e7a51c26-8fb5-43c4-b06e-51a29d8f7e65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="launcher">
+      <UniqueIdentifier>{f8b62d37-90c6-44d5-c17f-62b3ae908f76}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\tests\main.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\common\process_utils.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\common\dpi_math.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\common\process_utils.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\launcher\launcher_args.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

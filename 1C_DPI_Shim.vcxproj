@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{8F3C1A2E-4B7D-4E91-9C2A-7D6E5F4B3A21}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>OneCDpiShim</RootNamespace>
+    <ProjectName>1C_DPI_Shim</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType Condition="'$(BuildAsDll)'=='true'">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="'$(BuildAsDll)'!='true'">Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType Condition="'$(BuildAsDll)'=='true'">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="'$(BuildAsDll)'!='true'">Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <TargetName Condition="'$(BuildAsDll)'=='true'">1C_DPI_Shim</TargetName>
+    <TargetName Condition="'$(BuildAsDll)'!='true'">1C-DPI-Shim</TargetName>
+    <ShimDllDir>$(SolutionDir)obj\shim\$(Platform)\$(Configuration)\</ShimDllDir>
+    <ShimDllFile>$(ShimDllDir)1C_DPI_Shim.dll</ShimDllFile>
+    <IntDir Condition="'$(BuildAsDll)'=='true'">$(ShimDllDir)</IntDir>
+    <IntDir Condition="'$(BuildAsDll)'!='true'">$(SolutionDir)obj\launcher\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(BuildAsDll)'=='true'">$(ShimDllDir)</OutDir>
+    <ApplicationIcon Condition="'$(BuildAsDll)'!='true'">resources\app.ico</ApplicationIcon>
+    <LocalDebuggerCommandArguments>225 --designer</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)source\common;$(ProjectDir)source\launcher;$(ProjectDir)source\shim;$(ProjectDir)source\minhook;$(ProjectDir)resources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(BuildAsDll)'=='true'">UNICODE;_UNICODE;WINVER=0x0A00;_WIN32_WINNT=0x0A00;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(BuildAsDll)'!='true'">UNICODE;_UNICODE;WINVER=0x0A00;_WIN32_WINNT=0x0A00;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <SubSystem Condition="'$(BuildAsDll)'=='true'">Windows</SubSystem>
+      <SubSystem Condition="'$(BuildAsDll)'!='true'">Console</SubSystem>
+      <ImportLibrary Condition="'$(BuildAsDll)'=='true'">$(IntDir)$(TargetName).lib</ImportLibrary>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">true</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Release'">false</GenerateDebugInformation>
+      <EnableCOMDATFolding Condition="'$(Configuration)'=='Release'">true</EnableCOMDATFolding>
+      <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)resources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent Condition="'$(BuildAsDll)'!='true'">
+      <Command>if not exist "$(OutDir)" mkdir "$(OutDir)"
+copy /Y "$(ProjectDir)config\1c-dpi.ini" "$(OutDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\launcher\main.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\launcher\payload.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\launcher\console_icon.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\common\inject.cpp" />
+    <ClCompile Include="source\common\process_utils.cpp" />
+    <ClCompile Include="source\shim\dllmain.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\shim\dpi_shim.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\shim\dpi_hooks.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\shim\logging.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\minhook\buffer.c">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\minhook\hook.c">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\minhook\trampoline.c">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\minhook\hde\hde32.c">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\launcher\launcher_args.h" />
+    <ClInclude Include="source\launcher\payload.h" />
+    <ClInclude Include="source\launcher\console_icon.h" />
+    <ClInclude Include="resources\resource.h" />
+    <ClInclude Include="source\common\inject.h" />
+    <ClInclude Include="source\common\dpi_math.h" />
+    <ClInclude Include="source\common\process_utils.h" />
+    <ClInclude Include="source\shim\dpi_shim.h" />
+    <ClInclude Include="source\shim\dpi_hooks.h" />
+    <ClInclude Include="source\shim\logging.h" />
+    <ClInclude Include="source\minhook\MinHook.h" />
+    <ClInclude Include="source\minhook\buffer.h" />
+    <ClInclude Include="source\minhook\trampoline.h" />
+    <ClInclude Include="source\minhook\hde\hde32.h" />
+    <ClInclude Include="source\minhook\hde\table32.h" />
+    <ClInclude Include="source\minhook\hde\pstdint.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config\1c-dpi.ini" />
+    <None Include="source\minhook\LICENSE.txt" />
+    <None Include="source\minhook\AUTHORS.txt" />
+    <None Include="resources\app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\app.rc">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
+    </ResourceCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="BuildShimDll" BeforeTargets="PrepareForBuild" Condition="'$(BuildAsDll)'!='true' And '$(DesignTimeBuild)'!='true'">
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Build" Properties="BuildAsDll=true;Configuration=$(Configuration);Platform=$(Platform);ConfigurationType=DynamicLibrary;TargetName=1C_DPI_Shim;OutDir=$(ShimDllDir);IntDir=$(ShimDllDir)" />
+  </Target>
+  <Target Name="GeneratePayloadRc" BeforeTargets="ResourceCompile" DependsOnTargets="BuildShimDll" Condition="'$(BuildAsDll)'!='true' And '$(DesignTimeBuild)'!='true'" Inputs="$(ShimDllFile)" Outputs="$(IntDir)shim_payload.rc">
+    <MakeDir Directories="$(IntDir)" />
+    <PropertyGroup>
+      <_ShimDllUnix>$(ShimDllFile.Replace('\', '/'))</_ShimDllUnix>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(IntDir)shim_payload.rc" Lines="SHIMPAYLOAD RCDATA &quot;$(_ShimDllUnix)&quot;" Overwrite="true" Encoding="ASCII" />
+    <Touch Files="$(IntDir)shim_payload.rc" />
+  </Target>
+  <ItemGroup Condition="'$(BuildAsDll)'!='true'">
+    <ResourceCompile Include="$(IntDir)shim_payload.rc" />
+  </ItemGroup>
+  <Target Name="CleanShimDll" BeforeTargets="Clean" Condition="'$(BuildAsDll)'!='true' And '$(DesignTimeBuild)'!='true'">
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Clean" Properties="BuildAsDll=true;Configuration=$(Configuration);Platform=$(Platform);ConfigurationType=DynamicLibrary;TargetName=1C_DPI_Shim;OutDir=$(ShimDllDir);IntDir=$(ShimDllDir)" />
+  </Target>
+</Project>
