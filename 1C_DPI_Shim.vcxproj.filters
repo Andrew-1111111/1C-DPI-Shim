@@ -27,7 +27,10 @@
     <ClCompile Include="source\launcher\payload.cpp">
       <Filter>launcher</Filter>
     </ClCompile>
-    <ClCompile Include="source\launcher\console_icon.cpp">
+    <ClCompile Include="source\launcher\console.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="source\launcher\onec_locator.cpp">
       <Filter>launcher</Filter>
     </ClCompile>
     <ClCompile Include="source\shim\dllmain.cpp">
@@ -46,6 +49,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="source\common\inject.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="source\common\io.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="source\minhook\buffer.c">
@@ -68,7 +74,10 @@
     <ClInclude Include="source\launcher\payload.h">
       <Filter>launcher</Filter>
     </ClInclude>
-    <ClInclude Include="source\launcher\console_icon.h">
+    <ClInclude Include="source\launcher\console.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="source\launcher\onec_locator.h">
       <Filter>launcher</Filter>
     </ClInclude>
     <ClInclude Include="resources\resource.h">
@@ -90,6 +99,9 @@
       <Filter>shim</Filter>
     </ClInclude>
     <ClInclude Include="source\common\inject.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="source\common\io.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="source\minhook\MinHook.h">

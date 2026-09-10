@@ -90,11 +90,15 @@ copy /Y "$(ProjectDir)config\1c-dpi.ini" "$(OutDir)"</Command>
     <ClCompile Include="source\launcher\payload.cpp">
       <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="source\launcher\console_icon.cpp">
+    <ClCompile Include="source\launcher\console.cpp">
+      <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\launcher\onec_locator.cpp">
       <ExcludedFromBuild Condition="'$(BuildAsDll)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="source\common\inject.cpp" />
     <ClCompile Include="source\common\process_utils.cpp" />
+    <ClCompile Include="source\common\io.cpp" />
     <ClCompile Include="source\shim\dllmain.cpp">
       <ExcludedFromBuild Condition="'$(BuildAsDll)'!='true'">true</ExcludedFromBuild>
     </ClCompile>
@@ -123,11 +127,13 @@ copy /Y "$(ProjectDir)config\1c-dpi.ini" "$(OutDir)"</Command>
   <ItemGroup>
     <ClInclude Include="source\launcher\launcher_args.h" />
     <ClInclude Include="source\launcher\payload.h" />
-    <ClInclude Include="source\launcher\console_icon.h" />
+    <ClInclude Include="source\launcher\console.h" />
+    <ClInclude Include="source\launcher\onec_locator.h" />
     <ClInclude Include="resources\resource.h" />
     <ClInclude Include="source\common\inject.h" />
     <ClInclude Include="source\common\dpi_math.h" />
     <ClInclude Include="source\common\process_utils.h" />
+    <ClInclude Include="source\common\io.h" />
     <ClInclude Include="source\shim\dpi_shim.h" />
     <ClInclude Include="source\shim\dpi_hooks.h" />
     <ClInclude Include="source\shim\logging.h" />

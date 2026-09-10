@@ -1,5 +1,6 @@
 #include "dpi_hooks.h"
 #include "dpi_shim.h"
+#include "io.h"
 #include "inject.h"
 #include "logging.h"
 #include "process_utils.h"
@@ -277,11 +278,6 @@ bool IsAbsolutePath(LPCWSTR path) {
     return ((path[0] >= L'A' && path[0] <= L'Z') || (path[0] >= L'a' && path[0] <= L'z')) && path[1] == L':';
 }
 
-bool FileExistsW(LPCWSTR path) {
-    const DWORD attr = GetFileAttributesW(path);
-    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0;
-}
-
 void JoinDirFile(LPCWSTR dir, LPCWSTR file, wchar_t* out, size_t outCch) {
     wcsncpy_s(out, outCch, dir, _TRUNCATE);
     const size_t n = wcslen(out);
@@ -301,7 +297,7 @@ bool ResolveOneCImage(LPCWSTR file, LPCWSTR dir, wchar_t* out, size_t outCch) {
     }
     if (dir && dir[0]) {
         JoinDirFile(dir, file, out, outCch);
-        if (FileExistsW(out) && Proc_IsOneCImagePath(out)) {
+        if (IO::FileExists(out) && Proc_IsOneCImagePath(out)) {
             return true;
         }
     }
@@ -311,7 +307,7 @@ bool ResolveOneCImage(LPCWSTR file, LPCWSTR dir, wchar_t* out, size_t outCch) {
     if (slash) {
         *slash = 0;
         JoinDirFile(self, file, out, outCch);
-        if (FileExistsW(out) && Proc_IsOneCImagePath(out)) {
+        if (IO::FileExists(out) && Proc_IsOneCImagePath(out)) {
             return true;
         }
     }

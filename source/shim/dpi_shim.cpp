@@ -1,6 +1,7 @@
 #include "dpi_shim.h"
 #include "dpi_hooks.h"
 #include "dpi_math.h"
+#include "io.h"
 #include "logging.h"
 #include "process_utils.h"
 
@@ -105,11 +106,6 @@ void DirName(wchar_t* path) {
     }
 }
 
-bool FileExists(const wchar_t* path) {
-    const DWORD attr = GetFileAttributesW(path);
-    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0;
-}
-
 bool IsAbsolutePath(const wchar_t* path) {
     if (!path || path[0] == 0) {
         return false;
@@ -147,7 +143,7 @@ void ResolveLogPath(HMODULE module, const wchar_t* requested, wchar_t* out, size
 
 void ResolveIniPath(HMODULE module, wchar_t* out, size_t outCch) {
     wchar_t envIni[MAX_PATH] = {};
-    if (GetEnvironmentVariableW(L"ONEC_DPI_INI", envIni, MAX_PATH) > 0 && FileExists(envIni)) {
+    if (GetEnvironmentVariableW(L"ONEC_DPI_INI", envIni, MAX_PATH) > 0 && IO::FileExists(envIni)) {
         wcsncpy_s(out, outCch, envIni, _TRUNCATE);
         return;
     }
@@ -157,7 +153,7 @@ void ResolveIniPath(HMODULE module, wchar_t* out, size_t outCch) {
     DirName(dllDir);
     wchar_t candidate[MAX_PATH] = {};
     JoinPath(candidate, MAX_PATH, dllDir, L"1c-dpi.ini");
-    if (FileExists(candidate)) {
+    if (IO::FileExists(candidate)) {
         wcsncpy_s(out, outCch, candidate, _TRUNCATE);
         return;
     }
@@ -165,7 +161,7 @@ void ResolveIniPath(HMODULE module, wchar_t* out, size_t outCch) {
     wchar_t appdata[MAX_PATH] = {};
     if (GetEnvironmentVariableW(L"APPDATA", appdata, MAX_PATH) > 0) {
         JoinPath(candidate, MAX_PATH, appdata, L"1C-DPI-Shim\\1c-dpi.ini");
-        if (FileExists(candidate)) {
+        if (IO::FileExists(candidate)) {
             wcsncpy_s(out, outCch, candidate, _TRUNCATE);
             return;
         }
@@ -188,7 +184,7 @@ void LoadConfig(HMODULE module) {
     GetModuleFileNameW(module, g_config.dllPath, MAX_PATH);
     ResolveIniPath(module, g_config.iniPath, MAX_PATH);
 
-    const bool iniExists = FileExists(g_config.iniPath);
+    const bool iniExists = IO::FileExists(g_config.iniPath);
     g_config.enabled = ReadInt(g_config.iniPath, L"enabled", 1) != 0;
     g_config.logEnabled = ReadInt(g_config.iniPath, L"log", 1) != 0;
     g_config.verboseLog = ReadInt(g_config.iniPath, L"log_verbose", 1) != 0;
