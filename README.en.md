@@ -1,6 +1,6 @@
 # 1C DPI Shim
 
-A **C++** DPI shim for the **1C:Enterprise 8.3** platform. It scales **only** the 1C UI (Designer / `1cv8.exe`). Windows scaling and every other application stay unchanged.
+A **C++** DPI shim for the **1C:Enterprise 8.3** platform. It scales the 1C UI (Designer / `1cv8.exe`). Windows scaling and every other application stay unchanged.
 
 [Русский](README.md)
 
